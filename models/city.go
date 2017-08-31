@@ -7,6 +7,10 @@ import (
 	"strings"
 )
 
+// TODO: this should have its own simplified CSS format, rather than the
+// specific one provided. Otherwise new formats will require conversion or a
+// different loading implementation.
+
 type City struct {
 	Id      string  // 5881791
 	Name    string  // Abbotsford
