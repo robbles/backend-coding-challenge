@@ -6,18 +6,16 @@ package models
 */
 type RadixTree struct {
 	edges Edges
-	value string
 
 	// TODO: should this field be removed since only leaf nodes have values?
 	leaf bool
+
+	// TODO: does this need to become an interface{}?
+	// or is it better to have RadixTree know about city objects?
+	value string
 }
 
 type Edges map[rune]*RadixTree
-
-type ScoredResult struct {
-	key   string
-	score float64
-}
 
 func NewRadixTree() *RadixTree {
 	return &RadixTree{
@@ -97,11 +95,12 @@ func (tree *RadixTree) FindMatches(prefix string, limit int) []string {
 			results = append(results, node.value)
 			count += 1
 
-			if count >= limit {
+			if limit > 0 && count >= limit {
 				break
 			}
 		}
 
+		// after processing each node, add its children to the end of the queue
 		for _, value := range node.edges {
 			queue = append(queue, value)
 		}

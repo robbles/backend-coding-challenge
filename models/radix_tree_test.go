@@ -2,12 +2,17 @@ package models
 
 import (
 	"reflect"
+	"sort"
 	"testing"
 )
 
-func makeTree(char rune, child *RadixTree) *RadixTree {
+func makeTree(args ...interface{}) *RadixTree {
 	tree := NewRadixTree()
-	tree.edges[char] = child
+	for len(args) >= 2 {
+		char, child, rest := args[0], args[1], args[2:]
+		tree.edges[char.(rune)] = child.(*RadixTree)
+		args = rest
+	}
 	return tree
 }
 
@@ -88,12 +93,14 @@ func TestRadixTree_Insert(t *testing.T) {
 		"multiple characters non-empty tree": {
 			makeTree('a', makeTree('b', makeTree('c', makeLeaf("abc")))),
 			"abd",
-			makeTree('a', makeTree('b', &RadixTree{
-				edges: Edges{
-					'c': makeLeaf("abc"),
-					'd': makeLeaf("abd"),
-				},
-			})),
+			makeTree(
+				'a', makeTree(
+					'b', makeTree(
+						'c', makeLeaf("abc"),
+						'd', makeLeaf("abd"),
+					),
+				),
+			),
 		},
 	}
 	for name, tt := range tests {
@@ -132,31 +139,46 @@ func TestRadixTree_FindMatches(t *testing.T) {
 			[]string{"a"},
 		},
 		"multiple matches": {
-			makeTree('a', makeTree('b', &RadixTree{
-				edges: Edges{
-					'c': makeLeaf("abc"),
-					'd': makeLeaf("abd"),
-				},
-			})),
+			makeTree(
+				'a', makeTree(
+					'b', makeTree(
+						'c', makeLeaf("abc"),
+						'd', makeLeaf("abd"),
+					),
+				),
+			),
 			"ab",
 			10,
 			[]string{"abc", "abd"},
 		},
-		"multiple matches limit shortest first": {
-			makeTree('a', makeTree('b', &RadixTree{
-				edges: Edges{
-					'c': makeLeaf("abc"),
-					'd': makeTree('e', makeLeaf("abde")),
-				},
-			})),
+		"multiple matches limit returns shortest first": {
+			makeTree('a', makeTree('b', makeTree(
+				'c', makeLeaf("abc"),
+				'd', makeTree('e', makeLeaf("abde")),
+			))),
 			"ab",
 			1,
 			[]string{"abc"},
 		},
+		"limit < 0 means no limit": {
+			makeTree(
+				'a', makeTree(
+					'b', makeTree(
+						'c', makeLeaf("abc"),
+						'd', makeLeaf("abd"),
+					),
+				),
+			),
+			"ab",
+			-1,
+			[]string{"abc", "abd"},
+		},
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			if actual := tt.tree.FindMatches(tt.key, tt.limit); !reflect.DeepEqual(actual, tt.expected) {
+			actual := tt.tree.FindMatches(tt.key, tt.limit)
+			sort.Strings(actual)
+			if !reflect.DeepEqual(actual, tt.expected) {
 				t.Errorf("%#v != %#v", actual, tt.expected)
 			}
 		})
