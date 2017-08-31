@@ -6,31 +6,31 @@ import (
 	"testing"
 )
 
-func makeTree(args ...interface{}) *RadixTree {
-	tree := NewRadixTree()
+func makeTree(args ...interface{}) *Trie {
+	tree := NewTrie()
 	for len(args) >= 2 {
 		char, child, rest := args[0], args[1], args[2:]
-		tree.edges[char.(rune)] = child.(*RadixTree)
+		tree.edges[char.(rune)] = child.(*Trie)
 		args = rest
 	}
 	return tree
 }
 
-func makeLeaf(value string) *RadixTree {
-	tree := NewRadixTree()
+func makeLeaf(value string) *Trie {
+	tree := NewTrie()
 	tree.leaf = true
 	tree.value = value
 	return tree
 }
 
-func TestRadixTree_Find(t *testing.T) {
+func TestTrie_Find(t *testing.T) {
 	tests := map[string]struct {
-		tree     *RadixTree
+		tree     *Trie
 		key      string
 		expected bool
 	}{
 		"empty tree": {
-			NewRadixTree(),
+			NewTrie(),
 			"nope",
 			false,
 		},
@@ -69,24 +69,24 @@ func TestRadixTree_Find(t *testing.T) {
 	}
 }
 
-func TestRadixTree_Insert(t *testing.T) {
+func TestTrie_Insert(t *testing.T) {
 	tests := map[string]struct {
-		before *RadixTree
+		before *Trie
 		key    string
-		after  *RadixTree
+		after  *Trie
 	}{
 		"single character empty tree": {
-			NewRadixTree(),
+			NewTrie(),
 			"a",
 			makeTree('a', makeLeaf("a")),
 		},
 		"empty key empty tree": {
-			NewRadixTree(),
+			NewTrie(),
 			"",
 			makeLeaf(""),
 		},
 		"multiple characters empty tree": {
-			NewRadixTree(),
+			NewTrie(),
 			"abc",
 			makeTree('a', makeTree('b', makeTree('c', makeLeaf("abc")))),
 		},
@@ -113,15 +113,15 @@ func TestRadixTree_Insert(t *testing.T) {
 	}
 }
 
-func TestRadixTree_FindMatches(t *testing.T) {
+func TestTrie_FindMatches(t *testing.T) {
 	tests := map[string]struct {
-		tree     *RadixTree
+		tree     *Trie
 		key      string
 		limit    int
 		expected []string
 	}{
 		"empty tree": {
-			NewRadixTree(),
+			NewTrie(),
 			"nope",
 			10,
 			[]string{},

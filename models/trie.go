@@ -1,32 +1,31 @@
 package models
 
-/* This is a Radix Tree that:
-   - stores its children in a map{string -> node}
-   - uses single char keys in every node
-*/
-type RadixTree struct {
+// This is a tree that:
+// - stores its children in a map{string -> node}
+// - uses single char keys in every node
+type Trie struct {
 	edges Edges
 
 	// TODO: should this field be removed since only leaf nodes have values?
 	leaf bool
 
 	// TODO: does this need to become an interface{}?
-	// or is it better to have RadixTree know about city objects?
+	// or is it better to have Trie know about city objects?
 	value string
 }
 
-type Edges map[rune]*RadixTree
+type Edges map[rune]*Trie
 
-func NewRadixTree() *RadixTree {
-	return &RadixTree{
+func NewTrie() *Trie {
+	return &Trie{
 		edges: make(Edges),
 		leaf:  false,
 	}
 }
 
 // Insert a key into the tree.
-func (tree *RadixTree) Insert(key string) {
-	var node *RadixTree = tree
+func (tree *Trie) Insert(key string) {
+	var node *Trie = tree
 
 	// iterate through each character in the key
 	for _, char := range key {
@@ -34,7 +33,7 @@ func (tree *RadixTree) Insert(key string) {
 		leaf, found := node.edges[char]
 		if !found {
 			// if not found, we need to create the leaf node and attach it
-			leaf = NewRadixTree()
+			leaf = NewTrie()
 			node.edges[char] = leaf
 		}
 
@@ -48,8 +47,8 @@ func (tree *RadixTree) Insert(key string) {
 }
 
 // Check if a key is present in the tree.
-func (tree *RadixTree) Find(key string) bool {
-	var node *RadixTree = tree
+func (tree *Trie) Find(key string) bool {
+	var node *Trie = tree
 	var found bool
 
 	for _, char := range key {
@@ -67,7 +66,7 @@ func (tree *RadixTree) Find(key string) bool {
 }
 
 // Find <limit> matches with the given <prefix>.
-func (tree *RadixTree) FindMatches(prefix string, limit int) []string {
+func (tree *Trie) FindMatches(prefix string, limit int) []string {
 	root := tree
 	count := 0
 	results := []string{}
@@ -83,8 +82,8 @@ func (tree *RadixTree) FindMatches(prefix string, limit int) []string {
 	}
 
 	// breadth first search starting at current root node
-	queue := []*RadixTree{root}
-	var node *RadixTree
+	queue := []*Trie{root}
+	var node *Trie
 
 	for len(queue) > 0 {
 		// dequeue safely (range doesn't allow modifying the original slice)

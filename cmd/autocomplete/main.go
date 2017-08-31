@@ -27,7 +27,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	tree := models.NewRadixTree()
+	tree := models.NewTrie()
 
 	for _, city := range cities {
 		tree.Insert(city.Name)
