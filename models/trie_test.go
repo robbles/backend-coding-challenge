@@ -16,7 +16,7 @@ func makeTree(args ...interface{}) *Trie {
 	return tree
 }
 
-func makeLeaf(value string) *Trie {
+func makeLeaf(value City) *Trie {
 	tree := NewTrie()
 	tree.leaf = true
 	tree.value = value
@@ -35,27 +35,27 @@ func TestTrie_Find(t *testing.T) {
 			false,
 		},
 		"missing key": {
-			makeTree('a', makeLeaf("a")),
+			makeTree('a', makeLeaf(City{Name: "a"})),
 			"nope",
 			false,
 		},
 		"single character": {
-			makeTree('a', makeLeaf("a")),
+			makeTree('a', makeLeaf(City{Name: "a"})),
 			"a",
 			true,
 		},
 		"multiple characters": {
-			makeTree('a', makeTree('b', makeTree('c', makeLeaf("abc")))),
+			makeTree('a', makeTree('b', makeTree('c', makeLeaf(City{Name: "abc"})))),
 			"abc",
 			true,
 		},
 		"multiple character subset": {
-			makeTree('a', makeTree('b', makeTree('c', makeLeaf("abc")))),
+			makeTree('a', makeTree('b', makeTree('c', makeLeaf(City{Name: "abc"})))),
 			"ab",
 			false,
 		},
 		"multiple character superset": {
-			makeTree('a', makeTree('b', makeTree('c', makeLeaf("abc")))),
+			makeTree('a', makeTree('b', makeTree('c', makeLeaf(City{Name: "abc"})))),
 			"abcd",
 			false,
 		},
@@ -73,31 +73,36 @@ func TestTrie_Insert(t *testing.T) {
 	tests := map[string]struct {
 		before *Trie
 		key    string
+		value  City
 		after  *Trie
 	}{
 		"single character empty tree": {
 			NewTrie(),
 			"a",
-			makeTree('a', makeLeaf("a")),
+			City{Name: "a"},
+			makeTree('a', makeLeaf(City{Name: "a"})),
 		},
 		"empty key empty tree": {
 			NewTrie(),
 			"",
-			makeLeaf(""),
+			City{Name: ""},
+			makeLeaf(City{Name: ""}),
 		},
 		"multiple characters empty tree": {
 			NewTrie(),
 			"abc",
-			makeTree('a', makeTree('b', makeTree('c', makeLeaf("abc")))),
+			City{Name: "abc"},
+			makeTree('a', makeTree('b', makeTree('c', makeLeaf(City{Name: "abc"})))),
 		},
 		"multiple characters non-empty tree": {
-			makeTree('a', makeTree('b', makeTree('c', makeLeaf("abc")))),
+			makeTree('a', makeTree('b', makeTree('c', makeLeaf(City{Name: "abc"})))),
 			"abd",
+			City{Name: "abd"},
 			makeTree(
 				'a', makeTree(
 					'b', makeTree(
-						'c', makeLeaf("abc"),
-						'd', makeLeaf("abd"),
+						'c', makeLeaf(City{Name: "abc"}),
+						'd', makeLeaf(City{Name: "abd"}),
 					),
 				),
 			),
@@ -106,7 +111,7 @@ func TestTrie_Insert(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			tree := tt.before
-			if tree.Insert(tt.key); !reflect.DeepEqual(tree, tt.after) {
+			if tree.Insert(tt.key, tt.value); !reflect.DeepEqual(tree, tt.after) {
 				t.Errorf("\n%#v\n!=\n%#v", tree, tt.after)
 			}
 		})
@@ -118,66 +123,66 @@ func TestTrie_FindMatches(t *testing.T) {
 		tree     *Trie
 		key      string
 		limit    int
-		expected []string
+		expected []City
 	}{
 		"empty tree": {
 			NewTrie(),
 			"nope",
 			10,
-			[]string{},
+			[]City{},
 		},
 		"missing key": {
-			makeTree('a', makeLeaf("a")),
+			makeTree('a', makeLeaf(City{Name: "a"})),
 			"nope",
 			10,
-			[]string{},
+			[]City{},
 		},
 		"exact match": {
-			makeTree('a', makeLeaf("a")),
+			makeTree('a', makeLeaf(City{Name: "a"})),
 			"a",
 			10,
-			[]string{"a"},
+			[]City{{Name: "a"}},
 		},
 		"multiple matches": {
 			makeTree(
 				'a', makeTree(
 					'b', makeTree(
-						'c', makeLeaf("abc"),
-						'd', makeLeaf("abd"),
+						'c', makeLeaf(City{Name: "abc"}),
+						'd', makeLeaf(City{Name: "abd"}),
 					),
 				),
 			),
 			"ab",
 			10,
-			[]string{"abc", "abd"},
+			[]City{{Name: "abc"}, {Name: "abd"}},
 		},
 		"multiple matches limit returns shortest first": {
 			makeTree('a', makeTree('b', makeTree(
-				'c', makeLeaf("abc"),
-				'd', makeTree('e', makeLeaf("abde")),
+				'c', makeLeaf(City{Name: "abc"}),
+				'd', makeTree('e', makeLeaf(City{Name: "abde"})),
 			))),
 			"ab",
 			1,
-			[]string{"abc"},
+			[]City{{Name: "abc"}},
 		},
 		"limit < 0 means no limit": {
 			makeTree(
 				'a', makeTree(
 					'b', makeTree(
-						'c', makeLeaf("abc"),
-						'd', makeLeaf("abd"),
+						'c', makeLeaf(City{Name: "abc"}),
+						'd', makeLeaf(City{Name: "abd"}),
 					),
 				),
 			),
 			"ab",
 			-1,
-			[]string{"abc", "abd"},
+			[]City{{Name: "abc"}, {Name: "abd"}},
 		},
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			actual := tt.tree.FindMatches(tt.key, tt.limit)
-			sort.Strings(actual)
+			sort.Sort(ByName(actual))
 			if !reflect.DeepEqual(actual, tt.expected) {
 				t.Errorf("%#v != %#v", actual, tt.expected)
 			}

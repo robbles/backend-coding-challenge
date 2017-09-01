@@ -9,9 +9,9 @@ type Trie struct {
 	// TODO: should this field be removed since only leaf nodes have values?
 	leaf bool
 
-	// TODO: does this need to become an interface{}?
-	// or is it better to have Trie know about city objects?
-	value string
+	// TODO: this should be an interface with accessor methods, to allow other
+	// objects with the minimum fields to be used.
+	value City
 }
 
 type Edges map[rune]*Trie
@@ -24,7 +24,7 @@ func NewTrie() *Trie {
 }
 
 // Insert a key into the tree.
-func (tree *Trie) Insert(key string) {
+func (tree *Trie) Insert(key string, value City) {
 	var node *Trie = tree
 
 	// iterate through each character in the key
@@ -43,7 +43,7 @@ func (tree *Trie) Insert(key string) {
 
 	// mark the current leaf node as a leaf and store the value
 	node.leaf = true
-	node.value = key
+	node.value = value
 }
 
 // Check if a key is present in the tree.
@@ -66,10 +66,10 @@ func (tree *Trie) Find(key string) bool {
 }
 
 // Find <limit> matches with the given <prefix>.
-func (tree *Trie) FindMatches(prefix string, limit int) []string {
+func (tree *Trie) FindMatches(prefix string, limit int) []City {
 	root := tree
 	count := 0
-	results := []string{}
+	results := []City{}
 
 	// find the subset of the tree that matches the query,
 	// and set that as the current root
@@ -100,8 +100,8 @@ func (tree *Trie) FindMatches(prefix string, limit int) []string {
 		}
 
 		// after processing each node, add its children to the end of the queue
-		for _, value := range node.edges {
-			queue = append(queue, value)
+		for _, child := range node.edges {
+			queue = append(queue, child)
 		}
 	}
 

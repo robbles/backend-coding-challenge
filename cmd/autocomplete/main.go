@@ -30,7 +30,7 @@ func main() {
 	tree := models.NewTrie()
 
 	for _, city := range cities {
-		tree.Insert(city.Name)
+		tree.Insert(city.Name, city)
 	}
 
 	for _, match := range tree.FindMatches(query, limit) {

@@ -12,12 +12,18 @@ import (
 // different loading implementation.
 
 type City struct {
-	Id      string  // 5881791
-	Name    string  // Abbotsford
-	Lat     float64 // 49.05798
-	Long    float64 // -122.25257
-	Country string  // CA
+	Id      string  `json:-`
+	Name    string  `json:"name"`
+	Lat     float64 `json:"latitude"`
+	Long    float64 `json:"longitude"`
+	Country string  `json:"country"`
 }
+
+type ByName []City
+
+func (a ByName) Len() int           { return len(a) }
+func (a ByName) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ByName) Less(i, j int) bool { return a[i].Name < a[j].Name }
 
 func ReadCityData(file io.Reader) (results []City, err error) {
 	scanner := bufio.NewScanner(file)
