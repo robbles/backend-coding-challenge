@@ -27,13 +27,13 @@ func main() {
 		log.Fatal(err)
 	}
 
-	tree := models.NewTrie()
+	locations := models.NewTrie()
 
-	for _, city := range cities {
-		tree.Insert(city.Name, city)
+	for _, location := range cities {
+		locations.Insert(location.Name, location)
 	}
 
-	for _, match := range tree.FindMatches(query, limit) {
+	for _, match := range locations.FindMatches(query, limit) {
 		fmt.Println(match)
 	}
 }

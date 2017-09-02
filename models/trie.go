@@ -11,7 +11,7 @@ type Trie struct {
 
 	// TODO: this should be an interface with accessor methods, to allow other
 	// objects with the minimum fields to be used.
-	value City
+	value Location
 }
 
 type Edges map[rune]*Trie
@@ -24,7 +24,7 @@ func NewTrie() *Trie {
 }
 
 // Insert a key into the tree.
-func (tree *Trie) Insert(key string, value City) {
+func (tree *Trie) Insert(key string, value Location) {
 	var node *Trie = tree
 
 	// iterate through each character in the key
@@ -66,10 +66,10 @@ func (tree *Trie) Find(key string) bool {
 }
 
 // Find <limit> matches with the given <prefix>.
-func (tree *Trie) FindMatches(prefix string, limit int) []City {
+func (tree *Trie) FindMatches(prefix string, limit int) []Location {
 	root := tree
 	count := 0
-	results := []City{}
+	results := []Location{}
 
 	// find the subset of the tree that matches the query,
 	// and set that as the current root

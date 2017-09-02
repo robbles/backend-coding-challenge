@@ -24,7 +24,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Read city data and insert into tree
+	// Read location data and insert into tree
 	cities, err := models.ReadCityData(f)
 	if err != nil {
 		log.Fatal(err)
@@ -32,8 +32,8 @@ func main() {
 
 	locations := models.NewTrie()
 
-	for _, city := range cities {
-		locations.Insert(city.Name, city)
+	for _, location := range cities {
+		locations.Insert(location.Name, location)
 	}
 
 	suggestions := controllers.NewSuggestionsController(locations)
