@@ -23,6 +23,61 @@ func makeLeaf(value Location) *Trie {
 	return tree
 }
 
+func TestTrie_Insert(t *testing.T) {
+	tests := map[string]struct {
+		before *Trie
+		key    string
+		value  Location
+		after  *Trie
+	}{
+		"single character empty tree": {
+			NewTrie(),
+			"a",
+			Location{Name: "a"},
+			makeTree('a', makeLeaf(Location{Name: "a"})),
+		},
+		"empty key empty tree": {
+			NewTrie(),
+			"",
+			Location{Name: ""},
+			makeLeaf(Location{Name: ""}),
+		},
+		"multiple characters empty tree": {
+			NewTrie(),
+			"abc",
+			Location{Name: "abc"},
+			makeTree('a', makeTree('b', makeTree('c', makeLeaf(Location{Name: "abc"})))),
+		},
+		"multiple characters case-insensitive": {
+			NewTrie(),
+			"ABC",
+			Location{Name: "ABC"},
+			makeTree('a', makeTree('b', makeTree('c', makeLeaf(Location{Name: "ABC"})))),
+		},
+		"multiple characters non-empty tree": {
+			makeTree('a', makeTree('b', makeTree('c', makeLeaf(Location{Name: "abc"})))),
+			"abd",
+			Location{Name: "abd"},
+			makeTree(
+				'a', makeTree(
+					'b', makeTree(
+						'c', makeLeaf(Location{Name: "abc"}),
+						'd', makeLeaf(Location{Name: "abd"}),
+					),
+				),
+			),
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			tree := tt.before
+			if tree.Insert(tt.key, tt.value); !reflect.DeepEqual(tree, tt.after) {
+				t.Errorf("\n%#v\n!=\n%#v", tree, tt.after)
+			}
+		})
+	}
+}
+
 func TestTrie_Find(t *testing.T) {
 	tests := map[string]struct {
 		tree     *Trie
@@ -59,60 +114,16 @@ func TestTrie_Find(t *testing.T) {
 			"abcd",
 			false,
 		},
+		"case-insensitive": {
+			makeTree('a', makeTree('b', makeTree('c', makeLeaf(Location{Name: "abc"})))),
+			"ABC",
+			true,
+		},
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			if actual := tt.tree.Find(tt.key); actual != tt.expected {
 				t.Errorf("%v != %v", actual, tt.expected)
-			}
-		})
-	}
-}
-
-func TestTrie_Insert(t *testing.T) {
-	tests := map[string]struct {
-		before *Trie
-		key    string
-		value  Location
-		after  *Trie
-	}{
-		"single character empty tree": {
-			NewTrie(),
-			"a",
-			Location{Name: "a"},
-			makeTree('a', makeLeaf(Location{Name: "a"})),
-		},
-		"empty key empty tree": {
-			NewTrie(),
-			"",
-			Location{Name: ""},
-			makeLeaf(Location{Name: ""}),
-		},
-		"multiple characters empty tree": {
-			NewTrie(),
-			"abc",
-			Location{Name: "abc"},
-			makeTree('a', makeTree('b', makeTree('c', makeLeaf(Location{Name: "abc"})))),
-		},
-		"multiple characters non-empty tree": {
-			makeTree('a', makeTree('b', makeTree('c', makeLeaf(Location{Name: "abc"})))),
-			"abd",
-			Location{Name: "abd"},
-			makeTree(
-				'a', makeTree(
-					'b', makeTree(
-						'c', makeLeaf(Location{Name: "abc"}),
-						'd', makeLeaf(Location{Name: "abd"}),
-					),
-				),
-			),
-		},
-	}
-	for name, tt := range tests {
-		t.Run(name, func(t *testing.T) {
-			tree := tt.before
-			if tree.Insert(tt.key, tt.value); !reflect.DeepEqual(tree, tt.after) {
-				t.Errorf("\n%#v\n!=\n%#v", tree, tt.after)
 			}
 		})
 	}
@@ -155,6 +166,18 @@ func TestTrie_FindMatches(t *testing.T) {
 			"ab",
 			10,
 			[]Location{{Name: "abc"}, {Name: "abd"}},
+		},
+		"case-insensitive": {
+			makeTree(
+				'a', makeTree(
+					'b', makeTree(
+						'c', makeLeaf(Location{Name: "ABC"}),
+					),
+				),
+			),
+			"ABC",
+			10,
+			[]Location{{Name: "ABC"}},
 		},
 		"multiple matches limit returns shortest first": {
 			makeTree('a', makeTree('b', makeTree(

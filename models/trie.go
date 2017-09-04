@@ -1,16 +1,14 @@
 package models
 
+import "strings"
+
 // This is a tree that:
 // - stores its children in a map{string -> node}
 // - uses single char keys in every node
+// - is case-insensitive
 type Trie struct {
 	edges Edges
-
-	// TODO: should this field be removed since only leaf nodes have values?
-	leaf bool
-
-	// TODO: this should be an interface with accessor methods, to allow other
-	// objects with the minimum fields to be used.
+	leaf  bool
 	value Location
 }
 
@@ -27,8 +25,8 @@ func NewTrie() *Trie {
 func (tree *Trie) Insert(key string, value Location) {
 	var node *Trie = tree
 
-	// iterate through each character in the key
-	for _, char := range key {
+	// iterate through each character in the key, lower-cased
+	for _, char := range strings.ToLower(key) {
 		// check to see if it exists as a child of the current tree
 		leaf, found := node.edges[char]
 		if !found {
@@ -51,7 +49,7 @@ func (tree *Trie) Find(key string) bool {
 	var node *Trie = tree
 	var found bool
 
-	for _, char := range key {
+	for _, char := range strings.ToLower(key) {
 		node, found = node.edges[char]
 		if !found {
 			return false
@@ -73,7 +71,7 @@ func (tree *Trie) FindMatches(prefix string, limit int) []Location {
 
 	// find the subset of the tree that matches the query,
 	// and set that as the current root
-	for _, char := range prefix {
+	for _, char := range strings.ToLower(prefix) {
 		child, found := root.edges[char]
 		if !found {
 			return results
@@ -104,8 +102,6 @@ func (tree *Trie) FindMatches(prefix string, limit int) []Location {
 			queue = append(queue, child)
 		}
 	}
-
-	// TODO: sort results and assign scores
 
 	return results
 }
