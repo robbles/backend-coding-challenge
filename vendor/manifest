@@ -1,0 +1,13 @@
+{
+	"version": 0,
+	"dependencies": [
+		{
+			"importpath": "github.com/mholt/binding",
+			"repository": "https://github.com/mholt/binding",
+			"vcs": "git",
+			"revision": "9e84d4a48983e44b646bda238afbdb810d79256b",
+			"branch": "master",
+			"notests": true
+		}
+	]
+}

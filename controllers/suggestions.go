@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"sort"
 
+	"github.com/mholt/binding"
+
 	"backend_coding_challenge/models"
 )
 
@@ -19,17 +21,21 @@ func NewSuggestionsController(locations *models.Trie) *SuggestionsController {
 }
 
 func (c *SuggestionsController) HandleSuggestions(res http.ResponseWriter, req *http.Request) {
-	query := req.FormValue("q")
-	limit := 10
+	// Parse input from query string
+	form := &SuggestionForm{Limit: 10}
+	if err := binding.Bind(req, form); err != nil {
+		http.Error(res, err.Error(), http.StatusBadRequest)
+		return
+	}
 
-	log.Printf("SuggestionsController: query=%#v", query)
+	log.Printf("SuggestionsController: %#v", form)
 
 	// Find locations matching the query prefix
-	matches := c.locations.FindMatches(query, limit)
+	matches := c.locations.FindMatches(form.Query, form.Limit)
 
 	// Initialize the algorithm used to score results
 	var scorer models.Scorer
-	scorer = models.NewRelativeLengthScorer(matches, query)
+	scorer = models.NewRelativeLengthScorer(matches, form.Query)
 
 	// Construct result objects from the locations and apply scores
 	var results []models.Result
@@ -52,5 +58,26 @@ func (c *SuggestionsController) HandleSuggestions(res http.ResponseWriter, req *
 		res.WriteHeader(500)
 		fmt.Fprint(res, `{"error": "failed to marshal response as JSON"}`)
 		return
+	}
+}
+
+type SuggestionForm struct {
+	Query string  // Prefix to query locations
+	Lat   float64 // Longitude for sorting results by distance (optional)
+	Long  float64 // Latitude for sorting results by distance (optional)
+	Limit int     // Limit to this many results in response (default 10)
+}
+
+// for auto-binding and validation with mholt/binding
+func (form *SuggestionForm) FieldMap(req *http.Request) binding.FieldMap {
+	return binding.FieldMap{
+		&form.Query: binding.Field{
+			Form:         "q",
+			Required:     true,
+			ErrorMessage: "query parameter 'q' is required",
+		},
+		&form.Lat:   "latitude",
+		&form.Long:  "longitude",
+		&form.Limit: "limit",
 	}
 }
