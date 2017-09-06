@@ -16,10 +16,10 @@ func makeTree(args ...interface{}) *Trie {
 	return tree
 }
 
-func makeLeaf(value Location) *Trie {
+func makeLeaf(value ...Location) *Trie {
 	tree := NewTrie()
 	tree.leaf = true
-	tree.value = append(tree.value, value)
+	tree.value = append(tree.value, value...)
 	return tree
 }
 
@@ -200,6 +200,18 @@ func TestTrie_FindMatches(t *testing.T) {
 			"ab",
 			-1,
 			[]Location{{Name: "abc"}, {Name: "abd"}},
+		},
+		"limit is respected by multi-result nodes": {
+			makeTree(
+				'a', makeLeaf(
+					Location{Name: "a"},
+					Location{Name: "a"},
+					Location{Name: "a"},
+				),
+			),
+			"a",
+			2,
+			[]Location{{Name: "a"}, {Name: "a"}},
 		},
 	}
 	for name, tt := range tests {

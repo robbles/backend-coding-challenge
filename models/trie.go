@@ -83,17 +83,20 @@ func (tree *Trie) FindMatches(prefix string, limit int) []Location {
 	queue := []*Trie{root}
 	var node *Trie
 
+loop_nodes:
 	for len(queue) > 0 {
 		// dequeue safely (range doesn't allow modifying the original slice)
 		node, queue = queue[0], queue[1:]
 
 		// only store leaf nodes as results
 		if node.leaf {
-			results = append(results, node.value...)
-			count += 1
+			for _, result := range node.value {
+				results = append(results, result)
+				count += 1
 
-			if limit > 0 && count >= limit {
-				break
+				if limit > 0 && count >= limit {
+					break loop_nodes
+				}
 			}
 		}
 
