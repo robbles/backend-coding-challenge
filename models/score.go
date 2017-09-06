@@ -20,9 +20,9 @@ func NewRelativeLengthScorer(locations []Location, query string) *RelativeLength
 }
 
 func (scorer *RelativeLengthScorer) Score(location Location) float64 {
-	return inverseLengthScore(len(location.Name) - scorer.queryLength)
+	return InverseLengthScore(len(location.Name) - scorer.queryLength)
 }
 
-func inverseLengthScore(n int) float64 {
+func InverseLengthScore(n int) float64 {
 	return math.Exp2(-float64(n))
 }

@@ -19,7 +19,7 @@ func makeTree(args ...interface{}) *Trie {
 func makeLeaf(value Location) *Trie {
 	tree := NewTrie()
 	tree.leaf = true
-	tree.value = value
+	tree.value = append(tree.value, value)
 	return tree
 }
 

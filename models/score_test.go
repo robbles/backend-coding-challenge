@@ -21,7 +21,7 @@ func TestRelativeLengthScorer_Score(t *testing.T) {
 			"ABC",
 			[]Location{{Name: "ABCD"}},
 			Location{Name: "ABCD"},
-			inverseLengthScore(1),
+			InverseLengthScore(1),
 		},
 		"empty string": {
 			"",
@@ -33,7 +33,7 @@ func TestRelativeLengthScorer_Score(t *testing.T) {
 			"",
 			[]Location{{Name: "ABC"}, {Name: "DEF"}, {Name: "GHI"}},
 			Location{Name: "DEF"},
-			inverseLengthScore(3),
+			InverseLengthScore(3),
 		},
 	}
 	for name, tt := range tests {

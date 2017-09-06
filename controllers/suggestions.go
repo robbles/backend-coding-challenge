@@ -37,7 +37,7 @@ func (c *SuggestionsController) HandleSuggestions(res http.ResponseWriter, req *
 		score := scorer.Score(location)
 
 		results = append(results, models.Result{
-			Name:  fmt.Sprintf("%s, %s", location.Name, location.Country),
+			Name:  location.DisplayName,
 			Lat:   location.Lat,
 			Long:  location.Long,
 			Score: score,

@@ -2,6 +2,7 @@ package models
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"strconv"
 	"strings"
@@ -12,11 +13,12 @@ import (
 // different loading implementation.
 
 type Location struct {
-	Id      string
-	Name    string
-	Lat     float64
-	Long    float64
-	Country string
+	ID          string
+	Name        string
+	DisplayName string
+	Lat         float64
+	Long        float64
+	Country     string
 }
 
 type ByName []Location
@@ -33,10 +35,12 @@ func ReadCityData(file io.Reader) (results []Location, err error) {
 		line := scanner.Text()
 		record := strings.Split(line, "\t")
 
+		// TODO: renderDisplayName function for translating state/country/province
 		location := Location{
-			Id:      record[0],
-			Name:    record[1],
-			Country: record[8],
+			ID:          record[0],
+			Name:        record[1],
+			DisplayName: fmt.Sprintf("%s, %s, %s", record[1], record[10], record[8]),
+			Country:     record[8],
 		}
 		if location.Lat, err = strconv.ParseFloat(record[4], 32); err != nil {
 			return nil, err

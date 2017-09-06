@@ -9,7 +9,7 @@ import "strings"
 type Trie struct {
 	edges Edges
 	leaf  bool
-	value Location
+	value []Location
 }
 
 type Edges map[rune]*Trie
@@ -41,7 +41,7 @@ func (tree *Trie) Insert(key string, value Location) {
 
 	// mark the current leaf node as a leaf and store the value
 	node.leaf = true
-	node.value = value
+	node.value = append(node.value, value)
 }
 
 // Check if a key is present in the tree.
@@ -89,7 +89,7 @@ func (tree *Trie) FindMatches(prefix string, limit int) []Location {
 
 		// only store leaf nodes as results
 		if node.leaf {
-			results = append(results, node.value)
+			results = append(results, node.value...)
 			count += 1
 
 			if limit > 0 && count >= limit {
