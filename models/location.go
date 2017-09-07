@@ -13,12 +13,12 @@ import (
 // different loading implementation.
 
 type Location struct {
-	ID          string
-	Name        string
-	DisplayName string
-	Lat         float64
-	Long        float64
-	Country     string
+	ID          string  `json:"id"`
+	Name        string  `json:"name"`
+	DisplayName string  `json:"display_name"`
+	Lat         float64 `json:"lat"`
+	Long        float64 `json:"long"`
+	Country     string  `json:"country"`
 }
 
 type ByName []Location

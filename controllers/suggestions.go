@@ -30,28 +30,45 @@ func (c *SuggestionsController) HandleSuggestions(res http.ResponseWriter, req *
 
 	log.Printf("SuggestionsController: %#v", form)
 
-	// Find locations matching the query prefix
-	matches := c.locations.FindMatches(form.Query, form.Limit)
-
 	// Initialize the algorithm used to score results
 	var scorer models.Scorer
-	scorer = models.NewRelativeLengthScorer(matches, form.Query)
+	var matches []models.Location
+
+	if form.Lat != nil && form.Long != nil {
+		log.Print("Matching by geographic distance")
+
+		// Use geo distance for scoring when latitude and longitude are passed
+		scorer = models.NewGeoDistanceScorer(*form.Lat, *form.Long)
+
+		// Find locations matching the query prefix, to a maximum of <limit>
+		matches = c.locations.FindMatches(form.Query, 0)
+	} else {
+		log.Print("Matching by relative length of city name")
+
+		// Fall back to scoring by length relative to the prefix otherwise
+		scorer = models.NewRelativeLengthScorer(form.Query)
+
+		// Find locations matching the query prefix, with no maximum to allow
+		// re-sorting by geographic distance
+		matches = c.locations.FindMatches(form.Query, form.Limit)
+	}
+
+	log.Printf("%d matches found for prefix query", len(matches))
 
 	// Construct result objects from the locations and apply scores
-	var results []models.Result
+	results := []models.Result{}
 	for _, location := range matches {
 		score := scorer.Score(location)
-
-		results = append(results, models.Result{
-			Name:  location.DisplayName,
-			Lat:   location.Lat,
-			Long:  location.Long,
-			Score: score,
-		})
+		results = append(results, models.NewResult(location, score))
 	}
 
 	// Sort by score descending (should already be sorted by this point)
 	sort.Sort(sort.Reverse(models.ResultsByScore(results)))
+
+	// Trim array of results to <limit>
+	if form.Limit > 0 && len(results) > form.Limit {
+		results = results[:form.Limit]
+	}
 
 	// Write out the results
 	if err := json.NewEncoder(res).Encode(results); err != nil {
@@ -62,10 +79,10 @@ func (c *SuggestionsController) HandleSuggestions(res http.ResponseWriter, req *
 }
 
 type SuggestionForm struct {
-	Query string  // Prefix to query locations
-	Lat   float64 // Longitude for sorting results by distance (optional)
-	Long  float64 // Latitude for sorting results by distance (optional)
-	Limit int     // Limit to this many results in response (default 10)
+	Query string   // Prefix to query locations
+	Lat   *float64 // Longitude for sorting results by distance (optional)
+	Long  *float64 // Latitude for sorting results by distance (optional)
+	Limit int      // Limit to this many results in response (default 10)
 }
 
 // for auto-binding and validation with mholt/binding

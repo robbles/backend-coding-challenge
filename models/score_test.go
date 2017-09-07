@@ -38,7 +38,7 @@ func TestRelativeLengthScorer_Score(t *testing.T) {
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			scorer := NewRelativeLengthScorer(tt.locations, tt.query)
+			scorer := NewRelativeLengthScorer(tt.query)
 
 			if actual := scorer.Score(tt.location); actual != tt.expected {
 				t.Errorf("%f", actual)

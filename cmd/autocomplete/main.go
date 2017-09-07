@@ -34,6 +34,6 @@ func main() {
 	}
 
 	for _, match := range locations.FindMatches(query, limit) {
-		fmt.Println(match)
+		fmt.Printf("%#v\n", match)
 	}
 }
