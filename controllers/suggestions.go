@@ -33,26 +33,21 @@ func (c *SuggestionsController) HandleSuggestions(res http.ResponseWriter, req *
 	// Initialize the algorithm used to score results
 	var scorer models.Scorer
 	var matches []models.Location
+	var matchLimit int
 
 	if form.Lat != nil && form.Long != nil {
-		log.Print("Matching by geographic distance")
-
 		// Use geo distance for scoring when latitude and longitude are passed
 		scorer = models.NewGeoDistanceScorer(*form.Lat, *form.Long)
 
-		// Find locations matching the query prefix, to a maximum of <limit>
-		matches = c.locations.FindMatches(form.Query, 0)
+		// Don't limit results before scoring, or close results may be excluded
+		matchLimit = 0
 	} else {
-		log.Print("Matching by relative length of city name")
-
 		// Fall back to scoring by length relative to the prefix otherwise
 		scorer = models.NewRelativeLengthScorer(form.Query)
-
-		// Find locations matching the query prefix, with no maximum to allow
-		// re-sorting by geographic distance
-		matches = c.locations.FindMatches(form.Query, form.Limit)
+		matchLimit = form.Limit
 	}
 
+	matches = c.locations.FindMatches(form.Query, matchLimit)
 	log.Printf("%d matches found for prefix query", len(matches))
 
 	// Construct result objects from the locations and apply scores

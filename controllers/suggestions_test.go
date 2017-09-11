@@ -17,9 +17,7 @@ func TestSuggestionsController_HandleSuggestions(t *testing.T) {
 	victoria := models.Location{ID: "6174041", Name: "Victoria", DisplayName: "Victoria, 02, CA", Lat: 48.43294143676758, Long: -123.36930084228516, Country: "CA"}
 	vista := models.Location{ID: "5406602", Name: "Vista", DisplayName: "Vista, CA, US", Lat: 33.20003890991211, Long: -117.24253845214844, Country: "US"}
 
-	//
 	locations := models.NewTrie()
-
 	locations.Insert("Victoria", victoria)
 	locations.Insert("Vista", vista)
 
@@ -66,6 +64,13 @@ func TestSuggestionsController_HandleSuggestions(t *testing.T) {
 			[]models.Result{
 				result(victoria, models.DistanceScore(48.43, -123.33, victoria.Lat, victoria.Long)),
 				result(vista, models.DistanceScore(48.43, -123.33, vista.Lat, vista.Long)),
+			},
+		},
+		"query with lat/long does not limit before scoring/sorting": {
+			"q=Vi&latitude=48.43&longitude=-123.33&limit=1",
+			200,
+			[]models.Result{
+				result(victoria, models.DistanceScore(48.43, -123.33, victoria.Lat, victoria.Long)),
 			},
 		},
 	}
