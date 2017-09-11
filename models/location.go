@@ -35,11 +35,17 @@ func ReadCityData(file io.Reader) (results []Location, err error) {
 		line := scanner.Text()
 		record := strings.Split(line, "\t")
 
-		// TODO: renderDisplayName function for translating state/country/province
+		// Translate region codes into human names, falling back on original value
+		regionName := record[10]
+		regionCode := record[8] + record[10]
+		if name, found := REGION_CODES[regionCode]; found {
+			regionName = name
+		}
+
 		location := Location{
 			ID:          record[0],
 			Name:        record[1],
-			DisplayName: fmt.Sprintf("%s, %s, %s", record[1], record[10], record[8]),
+			DisplayName: fmt.Sprintf("%s, %s, %s", record[1], regionName, record[8]),
 			Country:     record[8],
 		}
 		if location.Lat, err = strconv.ParseFloat(record[4], 32); err != nil {
@@ -57,4 +63,21 @@ func ReadCityData(file io.Reader) (results []Location, err error) {
 	}
 
 	return results, nil
+}
+
+// Mapping FIPS region codes to provinces/states
+var REGION_CODES = map[string]string{
+	"CA01": "Alberta",
+	"CA02": "British Columbia",
+	"CA03": "Manitoba",
+	"CA04": "New Brunswick",
+	"CA05": "Newfoundland and Labrador",
+	"CA07": "Nova Scotia",
+	"CA08": "Ontario",
+	"CA09": "Prince Edward Island",
+	"CA10": "Quebec",
+	"CA11": "Saskatchewan",
+	"CA12": "Yukon",
+	"CA13": "Northwest Territories",
+	"CA14": "Nunavut",
 }
